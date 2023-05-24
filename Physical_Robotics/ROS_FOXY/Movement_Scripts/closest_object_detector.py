@@ -1,24 +1,21 @@
 import rclpy # Python library for ROS 2
 from rclpy.node import Node # Handles the creation of nodes
-from sensor_msgs.msg import Image # Image is the message type
 from sensor_msgs.msg import LaserScan # LaserScan is another subscriber
 from geometry_msgs.msg import Twist # Twist data to move robot
-from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
-import os
-import numpy as np
 import cv2 # OpenCV library
 
-
+qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, history=rclpy.qos.HistoryPolicy.KEEP_LAST, depth=1)
+#Create Node Class
 class LidarNode(Node):
     '''Node that finds closest LIDAR scan distance & turns to that distance'''
     def __init__(self):
         super().__init__("laser_subscriber_node")
-        self.lidarsub = self.create_subscription(LaserScan, "/scan", self.lidar_callback, 10)
+        self.lidarsub = self.create_subscription(LaserScan, "/scan", self.lidar_callback, qos_policy)
         self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.imagesub = self.create_subscription(Image, "camera/image_raw", self.image_callback, 10)
-        self.br = CvBridge()
     def lidar_callback(self, msg : LaserScan, move_cmd = Twist(), object_found = False, min = 3.5):
+        print('test1')
         front_val = msg.ranges[0]
+        print(msg.ranges[0])
         for val in msg.ranges:
             if val <= min and val != "inf":
                 min = val
@@ -33,15 +30,14 @@ class LidarNode(Node):
             print("object found")
             self.destroy_node()
 
-    def image_callback(self, data : Image):
-        current_frame = self.br.imgmsg_to_cv2(data)
-        cv2.imwrite("closest_image.jpg", current_frame)
+
 
 def main():
     rclpy.init()
     my_node = LidarNode()
     print("Waiting for data to be published over the topic...")
     try:
+        print('test3')
         rclpy.spin(my_node)
     except KeyboardInterrupt:
         my_node.destroy_node()
