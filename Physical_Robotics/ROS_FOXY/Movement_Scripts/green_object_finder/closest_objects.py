@@ -12,12 +12,9 @@ import sys
 from object_class import Object
 import csv 
 
-#green values
-lower_green = np.array([68,100,100])
-upper_green = np.array([88,255,255])
 
 qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, history=rclpy.qos.HistoryPolicy.KEEP_LAST, depth=1)
-path_to_csv = '/home/gardongo/physical_robotics/nearby_objects.csv'
+path_to_csv = '/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/nearby_objects.csv'
 
     
 class GreenObjectFinder(Node):
@@ -166,11 +163,11 @@ class GreenObjectFinder(Node):
                 writing_objects_list.append(new_obj)
                 print(new_obj.object_to_tuple())
                 counter+=1
-            #bubble sort
+            '''#bubble sort
             for x in writing_objects_list:
                 for i in range(len(writing_objects_list)-1):
                     if writing_objects_list[i].distance > writing_objects_list[i+1].distance:
-                        writing_objects_list[i], writing_objects_list[i+1] = writing_objects_list[i+1], writing_objects_list[i]
+                        writing_objects_list[i], writing_objects_list[i+1] = writing_objects_list[i+1], writing_objects_list[i]'''
             with open(path_to_csv, 'w') as f:
                 writer = csv.writer(f)
                 for obj in writing_objects_list:
