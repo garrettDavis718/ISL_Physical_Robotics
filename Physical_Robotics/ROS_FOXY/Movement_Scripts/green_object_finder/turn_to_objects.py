@@ -30,9 +30,9 @@ class WallAvoider(Node):
          self.suscriber_callback, qos_policy)
         #init velocity pub
         self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.green_img_sub = self.create_subscription(Image, "image_mask", self.green_sub_callback, 10)
+        #self.green_img_sub = self.create_subscription(Image, "image_mask", self.green_sub_callback, 10)
         self.br = CvBridge()
-        self.cap = cv2.VideoCapture(0)
+        #self.cap = cv2.VideoCapture(0)
         #self.find_green = False
         self.green_found = False
     
@@ -45,13 +45,13 @@ class WallAvoider(Node):
             self.current_degree = obj.location
             self.pub.publish(Twist())
             #self.find_green = True
-            obj.is_green = self.green_sub_callback(self.cap)
+            obj.is_green = self.green_finder()
             self.found_objects.append(obj)
         write_csv(self.found_objects)
         print('all objects checked')
         sys.exit()
 
-    def green_sub_callback(self, data: Image):
+    '''def green_sub_callback(self, data: Image):
         #if self.find_green:
         #current_frame = self.br.imgmsg_to_cv2(data)
         ret, frame = self.cap.read()
@@ -65,7 +65,7 @@ class WallAvoider(Node):
         
         green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
         #check if green exists
-        if cv2.countNonZero(green_mask) > 0:#if green is found
+        if cv2.countNonZero(green_mask) > 0:
             self.green_found = True
             self.get_logger().info("Green Found!")
         else:
@@ -75,6 +75,35 @@ class WallAvoider(Node):
         #Display Image
         #cv2.imshow("image mask", current_frame)
     
+        #cv2.waitKey(1)'''
+
+
+    def green_finder(self):
+        green_found = False
+        cap = cv2.VideoCapture(0)
+        #if self.find_green:
+        #current_frame = self.br.imgmsg_to_cv2(data)
+        ret, frame = cap.read()
+        #wide = int(self.cap.get(3))
+        #height = int(self.cap.get(4))
+        #convert frame to hsv
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        #create masks
+        green_mask = cv2.inRange(hsv, lower_green, upper_green)
+        #results after checking mask against frame
+        
+        #green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
+        #check if green exists
+        if cv2.countNonZero(green_mask) > 0:
+            self.get_logger().info("Green Found!")
+            green_found = True
+        else:
+            self.get_logger().info('No green found')
+        return green_found
+        #self.find_green = False
+        #Display Image
+        #cv2.imshow("image mask", current_frame)
+
         #cv2.waitKey(1)
 
     def turn_right(self, move_cmd = Twist()):
