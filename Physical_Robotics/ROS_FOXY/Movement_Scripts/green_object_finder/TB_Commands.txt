@@ -1,0 +1,10 @@
+ssh r2tb-01 -
+ssh ubuntu@192.168.0.200 
+pass - turtlebot
+
+bringup tb
+ros2 launch turtlebot3_bringup robot.launch.py
+
+python3 ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/closest_objects.py
+python3 ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/turn_to_objects.py
+
