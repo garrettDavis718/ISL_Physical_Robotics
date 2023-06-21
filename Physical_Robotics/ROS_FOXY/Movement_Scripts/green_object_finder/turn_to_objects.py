@@ -32,7 +32,7 @@ class WallAvoider(Node):
         self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.br = CvBridge()
         self.green_found = False
-        self.closest_object = Object(0,0,None,False)
+        self.closest_object = Object(0,0,0.0,False)
     
     def suscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
         for obj in self.object_list:
@@ -42,10 +42,8 @@ class WallAvoider(Node):
             self.current_degree = obj.location
             self.pub.publish(Twist())
             obj.is_green = self.green_finder()
-            green_find = self.green_finder()
-            if green_find:
-                obj.is_green = green_find
-                if self.closest_object.distance == None :
+            if obj.is_green:
+                if self.closest_object.distance == 0.0 :
                     self.closest_object = obj
                 elif obj.distance <= self.closest_object.distance:
                     self.closest_object = obj
@@ -54,6 +52,8 @@ class WallAvoider(Node):
         self.turn_right()
         time.sleep((self.current_degree - self.closest_object.location)/260*32.5)
         print("Nearest Object in front")
+        self.pub.publish(Twist())
+        self.take_photo()
         write_csv(self.found_objects)
         sys.exit()
 
@@ -104,6 +104,14 @@ class WallAvoider(Node):
         #publish command
         self.pub.publish(move_cmd)
         print('Moving backward')
+
+    def take_photo(self):
+        cap = cv2.VideoCapture(0)
+        ret, frame = cap.read()
+        if ret:
+            cv2.imwrite("Nearest Object", frame)
+            print("Photo Taken")
+
 
 def read_csv():
     new_list = []
