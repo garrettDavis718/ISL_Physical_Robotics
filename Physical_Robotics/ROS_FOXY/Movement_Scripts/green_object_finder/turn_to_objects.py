@@ -17,6 +17,8 @@ qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_E
 path_to_csv = '/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/nearby_objects.csv'
 lower_green = np.array([48,63,63])
 upper_green = np.array([98,255,255])
+output_csv_path = '/media/external/nearby_objects.csv'
+path_to_photo = '/media/external/nearest_object.png'
 
 class WallAvoider(Node):
     def __init__(self):
@@ -109,7 +111,7 @@ class WallAvoider(Node):
         cap = cv2.VideoCapture(0)
         ret, frame = cap.read()
         if ret:
-            cv2.imwrite("Nearest Object", frame)
+            cv2.imwrite(path_to_photo, frame)
             print("Photo Taken")
 
 
@@ -123,7 +125,7 @@ def read_csv():
     return new_list
 
 def write_csv(objects):
-    with open(path_to_csv, 'w') as f:
+    with open(output_csv_path, 'w') as f:
         writer = csv.writer(f)
         for obj in objects:
             writer.writerow(obj.object_to_tuple())
