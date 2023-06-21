@@ -30,69 +30,41 @@ class WallAvoider(Node):
          self.suscriber_callback, qos_policy)
         #init velocity pub
         self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        #self.green_img_sub = self.create_subscription(Image, "image_mask", self.green_sub_callback, 10)
         self.br = CvBridge()
-        #self.cap = cv2.VideoCapture(0)
-        #self.find_green = False
         self.green_found = False
+        self.closest_object = Object(0,0,None,False)
     
     def suscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
-        #if not self.find_green:
         for obj in self.object_list:
             turn_loc = obj.location - self.current_degree
             self.turn_left()
             time.sleep(turn_loc/260*32.5)
             self.current_degree = obj.location
             self.pub.publish(Twist())
-            #self.find_green = True
             obj.is_green = self.green_finder()
+            green_find = self.green_finder()
+            if green_find:
+                obj.is_green = green_find
+                if self.closest_object.distance == None :
+                    self.closest_object = obj
+                elif obj.distance <= self.closest_object.distance:
+                    self.closest_object = obj
+            print(self.closest_object.id)
             self.found_objects.append(obj)
         write_csv(self.found_objects)
         print('all objects checked')
         sys.exit()
 
-    '''def green_sub_callback(self, data: Image):
-        #if self.find_green:
-        #current_frame = self.br.imgmsg_to_cv2(data)
-        ret, frame = self.cap.read()
-        #wide = int(self.cap.get(3))
-        #height = int(self.cap.get(4))
-        #convert frame to hsv
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        #create masks
-        green_mask = cv2.inRange(hsv, lower_green, upper_green)
-        #results after checking mask against frame
-        
-        green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
-        #check if green exists
-        if cv2.countNonZero(green_mask) > 0:
-            self.green_found = True
-            self.get_logger().info("Green Found!")
-        else:
-            self.green_found = False
-            self.get_logger().info('No green found')
-        #self.find_green = False
-        #Display Image
-        #cv2.imshow("image mask", current_frame)
-    
-        #cv2.waitKey(1)'''
 
 
     def green_finder(self):
         green_found = False
         cap = cv2.VideoCapture(0)
-        #if self.find_green:
-        #current_frame = self.br.imgmsg_to_cv2(data)
         ret, frame = cap.read()
-        #wide = int(self.cap.get(3))
-        #height = int(self.cap.get(4))
         #convert frame to hsv
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         #create masks
         green_mask = cv2.inRange(hsv, lower_green, upper_green)
-        #results after checking mask against frame
-        
-        #green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
         #check if green exists
         if cv2.countNonZero(green_mask) > 0:
             self.get_logger().info("Green Found!")
@@ -100,14 +72,8 @@ class WallAvoider(Node):
         else:
             self.get_logger().info('No green found')
         return green_found
-        #self.find_green = False
-        #Display Image
-        #cv2.imshow("image mask", current_frame)
-
-        #cv2.waitKey(1)
 
     def turn_right(self, move_cmd = Twist()):
-       
         move_cmd.linear.x = 0.0
         move_cmd.angular.z = -0.2
         #publish command
