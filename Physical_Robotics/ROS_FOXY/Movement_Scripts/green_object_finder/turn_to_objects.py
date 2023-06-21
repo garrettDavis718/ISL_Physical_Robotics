@@ -18,9 +18,9 @@ qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_E
 path_to_csv = '/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/nearby_objects.csv'
 lower_green = np.array([48,63,63])
 upper_green = np.array([98,255,255])
-time_stamp = datetime.now().strftime("%Y_%m_%d-%H:%M:%S")
-output_csv_path = f'/media/external/nearby_objects{time_stamp}.csv'
-path_to_photo = f'/media/external/nearest_object_{time_stamp}.png'
+time_stamp = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
+output_csv_path = f'/media/external/nearby_csv{time_stamp}.csv'
+path_to_photo = f'/media/external/nearest_image{time_stamp}.png'
 class WallAvoider(Node):
     def __init__(self):
         self.object_list = read_csv()
