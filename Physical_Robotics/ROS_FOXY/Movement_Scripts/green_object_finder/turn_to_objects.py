@@ -1,5 +1,6 @@
 import csv 
 import rclpy
+from datetime import datetime
 from rclpy.node import Node # Handles the creation of nodes
 from sensor_msgs.msg import LaserScan # LaserScan is another subscriber
 import time
@@ -17,9 +18,9 @@ qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_E
 path_to_csv = '/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/nearby_objects.csv'
 lower_green = np.array([48,63,63])
 upper_green = np.array([98,255,255])
-output_csv_path = '/media/external/nearby_objects.csv'
-path_to_photo = '/media/external/nearest_object.png'
-
+time_stamp = datetime.now().strftime("%Y_%m_%d-%H:%M:%S")
+output_csv_path = f'/media/external/nearby_objects{time_stamp}.csv'
+path_to_photo = f'/media/external/nearest_object_{time_stamp}.png'
 class WallAvoider(Node):
     def __init__(self):
         self.object_list = read_csv()
@@ -40,7 +41,7 @@ class WallAvoider(Node):
         for obj in self.object_list:
             turn_loc = obj.location - self.current_degree
             self.turn_left()
-            time.sleep(turn_loc/260*32.5)
+            time.sleep(turn_loc/len(msg.ranges)*32.5)
             self.current_degree = obj.location
             self.pub.publish(Twist())
             obj.is_green = self.green_finder()
@@ -52,7 +53,7 @@ class WallAvoider(Node):
             self.found_objects.append(obj)
         print('all objects checked')
         self.turn_right()
-        time.sleep((self.current_degree - self.closest_object.location)/260*32.5)
+        time.sleep((self.current_degree - self.closest_object.location)/len(msg.ranges)*32.5)
         print("Nearest Object in front")
         self.pub.publish(Twist())
         self.take_photo()
