@@ -49,10 +49,12 @@ class WallAvoider(Node):
                     self.closest_object = obj
                 elif obj.distance <= self.closest_object.distance:
                     self.closest_object = obj
-            print(self.closest_object.id)
             self.found_objects.append(obj)
-        write_csv(self.found_objects)
         print('all objects checked')
+        self.turn_right()
+        time.sleep((self.current_degree - self.closest_object.location)/260*32.5)
+        print("Nearest Object in front")
+        write_csv(self.found_objects)
         sys.exit()
 
 
