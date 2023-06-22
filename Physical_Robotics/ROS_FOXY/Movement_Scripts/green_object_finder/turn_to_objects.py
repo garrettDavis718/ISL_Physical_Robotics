@@ -65,6 +65,8 @@ class WallAvoider(Node):
     def green_finder(self):
         green_found = False
         cap = cv2.VideoCapture(0)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         ret, frame = cap.read()
         #convert frame to hsv
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
