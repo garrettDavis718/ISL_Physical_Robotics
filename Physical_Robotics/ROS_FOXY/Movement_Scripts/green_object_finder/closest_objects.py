@@ -28,7 +28,7 @@ class GreenObjectFinder(Node):
         self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.counter = 1
         self.max = 1.5
-        
+        self.len_of_ranges = 250
 
     def get_unique_objects(self):
         """_summary_:This function parses through the self.closest_objects list of tuples and sorts them into
@@ -62,9 +62,11 @@ class GreenObjectFinder(Node):
                 similar_objects.append(item)
                 last_object = item
         unique_objects.append(similar_objects)
+        print(unique_objects)
         return unique_objects
     
     def subscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
+        self.len_of_ranges = len(msg.ranges)
         lidar_vals = msg.ranges[0:len(msg.ranges)]
         object = []
 
@@ -73,6 +75,12 @@ class GreenObjectFinder(Node):
                 return msg.ranges[loc]
             else:
                 get_distance(loc+1)
+        
+        def avg_distance(value_1, value_2):
+            total = 0
+            for x in msg.ranges[value_1: value_2]:
+                total += x
+                return total/len(msg.ranges[value_1:value_2])
             
         
 
@@ -146,20 +154,28 @@ class GreenObjectFinder(Node):
                         else:
                             object.append(idx)
 
-                if not (tuple(object) in self.closest_objects) and (len(object) > 1 and len(object) < 3):
+                if not (object in self.closest_objects) and (len(object) > 1 and len(object) < 3):
 
-                    self.closest_objects.append(tuple(object))
+                    self.closest_objects.append(object[:])
                     object.clear()
                     
 
         def write_objects(final_list):
             counter = 1
             writing_objects_list = []
-            sorted_list = []
-            min = 0 
+            temp_objects = []
+            #sorted_list = []
+            #min = 0 
+            if abs(avg_distance(final_list[0][0],final_list[0][1])- avg_distance(final_list[-1][0],final_list[-1][1]))< 0.03:
+                print(abs(avg_distance(final_list[0][0],final_list[0][1]) - avg_distance(final_list[-1][0],final_list[-1][1])))
+                if final_list[0][0] <= 5 and final_list[-1][1] >= self.len_of_ranges - 5:
+                    final_list.pop(-1)
+                    final_list[0] = [0,1]
+                    
+            
             for x in final_list:
                 center = int((x[0]+x[1])/2)
-                new_obj = Object(counter, center, get_distance(center), False)
+                new_obj = Object(counter, center, avg_distance(x[0],x[1]), False)
                 writing_objects_list.append(new_obj)
                 print(new_obj.object_to_tuple())
                 counter+=1
@@ -172,14 +188,14 @@ class GreenObjectFinder(Node):
                 writer = csv.writer(f)
                 for obj in writing_objects_list:
                     writer.writerow(obj.object_to_tuple())
+                    print(f'Objects found: {len(writing_objects_list)}\nObject data written to file.')
             
 
 
         if self.counter == 1:
-            self.get_unique_objects()
+
             final_objects = [min(x) for x in self.get_unique_objects()]  
             write_objects(final_objects) 
-            print(f'Objects found: {len(final_objects)}\nObject data written to file.')
             sys.exit()
 
           
