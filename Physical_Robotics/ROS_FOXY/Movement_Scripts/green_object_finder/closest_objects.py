@@ -36,7 +36,7 @@ class GreenObjectFinder(Node):
         belongs to the same object.
 
         Returns:
-            _type_: list
+            list: The result is a list of slices that reference each object within the turtlebot's declared detection radius.
         """        ''''''
 
         new_lst = [x for x in sorted(self.closest_objects)]
@@ -62,25 +62,28 @@ class GreenObjectFinder(Node):
                 similar_objects.append(item)
                 last_object = item
         unique_objects.append(similar_objects)
-        print(unique_objects)
         return unique_objects
     
     def subscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
         self.len_of_ranges = len(msg.ranges)
         lidar_vals = msg.ranges[0:len(msg.ranges)]
         object = []
-
-        def get_distance(loc):
-            if not np.isnan(msg.ranges[loc]):
-                return msg.ranges[loc]
-            else:
-                get_distance(loc+1)
         
         def avg_distance(value_1, value_2):
+            """_summary_
+
+            Args:
+                value_1 (int): The beginning index of the slice that references an object of interest.
+                value_2 (int): The ending index of the slice that references an object of interest.
+
+            Returns:
+                float: Returns a float that will later be rounded once its passed as an attribute to the object class.
+            """
             total = 0
             for x in msg.ranges[value_1: value_2]:
-                total += x
-                return total/len(msg.ranges[value_1:value_2])
+                if not (np.isnan(x)):    
+                    total += x
+            return total/len(msg.ranges[value_1:value_2])
             
         
 
@@ -88,10 +91,11 @@ class GreenObjectFinder(Node):
             """_summary_: This function is a recursive call to find the next valid index that is not NaN.
 
             Args:
-                idx (_type_): int
+                idx (int): Pass in the index after our current index to check if that index contains a NaN.
 
             Returns:
-                _type_: bool, int
+                bool, int: Returns True or False if the next valid index is outside our declared range. The next
+                valid index is returned as well.
             """            ''''''
 
             if np.isnan(lidar_vals[idx]):
@@ -103,10 +107,11 @@ class GreenObjectFinder(Node):
             """_summary_: This function is a recursive call to find the last valid index that is not NaN.
 
             Args:
-                idx (_type_): int
+                idx (int): Pass in the index before our current index to check if that index contains a NaN.
 
             Returns:
-                _type_: bool, int
+                bool, int: Returns True or False if the last valid index is outside our declared range. The last
+                valid index is returned as well.
             """            
 
             if np.isnan(lidar_vals[idx]):
@@ -161,13 +166,21 @@ class GreenObjectFinder(Node):
                     
 
         def write_objects(final_list):
+            """_summary_: This function takes in a list of unique objects within the turtlebot's declared range
+            and instantiates each item of the list as an object of the object class. Each object is appended to 
+            a list that will be iterated over in order to create a csv.
+
+            Args:
+                final_list (list): This list contains the slices that reference each unique object within the turtlebot's
+                declared range.
+            
+            Output:
+                The output is a csv containing the id, center index, distance from the turtlebot, and is_green status
+                of each of our objects.
+            """
             counter = 1
             writing_objects_list = []
-            temp_objects = []
-            #sorted_list = []
-            #min = 0 
             if abs(avg_distance(final_list[0][0],final_list[0][1])- avg_distance(final_list[-1][0],final_list[-1][1]))< 0.03:
-                print(abs(avg_distance(final_list[0][0],final_list[0][1]) - avg_distance(final_list[-1][0],final_list[-1][1])))
                 if final_list[0][0] <= 5 and final_list[-1][1] >= self.len_of_ranges - 5:
                     final_list.pop(-1)
                     final_list[0] = [0,1]
@@ -179,11 +192,7 @@ class GreenObjectFinder(Node):
                 writing_objects_list.append(new_obj)
                 print(new_obj.object_to_tuple())
                 counter+=1
-            '''#bubble sort
-            for x in writing_objects_list:
-                for i in range(len(writing_objects_list)-1):
-                    if writing_objects_list[i].distance > writing_objects_list[i+1].distance:
-                        writing_objects_list[i], writing_objects_list[i+1] = writing_objects_list[i+1], writing_objects_list[i]'''
+           
             with open(path_to_csv, 'w') as f:
                 writer = csv.writer(f)
                 for obj in writing_objects_list:
