@@ -79,11 +79,13 @@ class GreenObjectFinder(Node):
             Returns:
                 float: Returns a float that will later be rounded once its passed as an attribute to the object class.
             """
+            counter = 0
             total = 0
             for x in msg.ranges[value_1: value_2]:
                 if not (np.isnan(x)):    
                     total += x
-            return total/len(msg.ranges[value_1:value_2])
+                    counter += 1
+            return total/counter
             
         
 
@@ -101,7 +103,7 @@ class GreenObjectFinder(Node):
             if np.isnan(lidar_vals[idx]):
                 return detect_next_nan(idx+1)
             else:
-                return lidar_vals[idx] > 1.0, idx
+                return lidar_vals[idx] > self.max, idx
             
         def detect_last_nan(idx):
             """_summary_: This function is a recursive call to find the last valid index that is not NaN.
@@ -117,7 +119,7 @@ class GreenObjectFinder(Node):
             if np.isnan(lidar_vals[idx]):
                 return detect_last_nan(idx-1)
             else:
-                return lidar_vals[idx] > 1.0, idx
+                return lidar_vals[idx] > self.max, idx
 
         for idx in range(len(lidar_vals)):
 
@@ -144,20 +146,18 @@ class GreenObjectFinder(Node):
                             if next_idx_bool:
                                 object.append(next_valid_idx)
 
-                            if lidar_vals[next_idx] > 1.0:
-                                object.append(idx)
-
                         elif is_previous_nan:
                             previous_idx_bool, previous_valid_idx = detect_last_nan(previous_idx)
 
                             if previous_idx_bool:
                                 object.append(previous_valid_idx)
 
-                            if lidar_vals[previous_idx] > 1.0:
+                        elif lidar_vals[next_idx] > self.max:
                                 object.append(idx)
 
-                        else:
-                            object.append(idx)
+                        elif lidar_vals[previous_idx] > self.max:
+                                object.append(idx)
+
 
                 if not (object in self.closest_objects) and (len(object) > 1 and len(object) < 3):
 
