@@ -4,6 +4,7 @@ from sensor_msgs.msg import LaserScan # LaserScan is another subscriber
 from geometry_msgs.msg import Twist # Twist data to move robot
 import cv2 # OpenCV library
 import numpy as np
+import matplotlib.pyplot as plt #Making diagram of lidar 
 from cv_bridge import CvBridge
 from std_msgs.msg import String #string for whether green found
 from sensor_msgs.msg import Image #image to publish image with green
@@ -29,6 +30,13 @@ class GreenObjectFinder(Node):
         self.counter = 1
         self.max = 1.5
         self.len_of_ranges = 250
+
+    def lidar_diagram(self, lidar_arr):
+        lidar_angles = np.array([1 for x in range(0,len(lidar_arr),5)])
+        my_labels = [x for x in range(0,len(lidar_arr),5)]
+
+        plt.pie(lidar_angles, labels=my_labels,startangle=90, radius=1.4)
+        plt.savefig('/home/gardongo/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/lidar_diagram.png')
 
     def get_unique_objects(self):
         """_summary_:This function parses through the self.closest_objects list of tuples and sorts them into
@@ -65,8 +73,15 @@ class GreenObjectFinder(Node):
         return unique_objects
     
     def subscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
+        def lidar_diagram(self, lidar_arr):
+            lidar_angles = np.array([1 for x in range(0,len(lidar_arr)+1,5)])
+            my_labels = [x for x in range(0,len(lidar_arr)+1,5)]
+            plt.pie(lidar_angles, labels=my_labels,startangle=90, radius=1.4)
+            plt.savefig('/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/lidar_diagram.png')
+       
         self.len_of_ranges = len(msg.ranges)
         lidar_vals = msg.ranges[0:len(msg.ranges)]
+        lidar_diagram(self, lidar_arr=lidar_vals)
         object = []
         
         def avg_distance(value_1, value_2):
@@ -208,7 +223,6 @@ class GreenObjectFinder(Node):
 
 
         if self.counter == 1:
-
             final_objects = [min(x) for x in self.get_unique_objects()]  
             write_objects(final_objects) 
             sys.exit()
