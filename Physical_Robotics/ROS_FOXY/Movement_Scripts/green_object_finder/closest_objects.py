@@ -121,13 +121,19 @@ class GreenObjectFinder(Node):
             else:
                 return lidar_vals[idx] > self.max, idx
 
+
         for idx in range(len(lidar_vals)):
 
             next_idx = idx + 1
             previous_idx = idx - 1
 
-        
-            if lidar_vals[idx] < self.max:
+            if np.isnan(lidar_vals[idx]):
+                pass
+
+            elif lidar_vals[idx] > self.max and object:
+                object.append(idx)
+
+            elif lidar_vals[idx] < self.max:
 
 
                 if idx == 0 or idx == (len(lidar_vals)-1):
@@ -139,12 +145,12 @@ class GreenObjectFinder(Node):
                     is_previous_nan = np.isnan(lidar_vals[previous_idx])
 
                     if (lidar_vals[previous_idx] > self.max or lidar_vals[next_idx] > self.max) or is_next_nan or is_previous_nan:
-                    
+
                         if is_next_nan:
                             next_idx_bool, next_valid_idx = detect_next_nan(next_idx)
 
                             if next_idx_bool:
-                                object.append(next_valid_idx)
+                                object.append(next_valid_idx)       
 
                         elif is_previous_nan:
                             previous_idx_bool, previous_valid_idx = detect_last_nan(previous_idx)
