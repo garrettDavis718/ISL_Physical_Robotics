@@ -64,8 +64,8 @@ class GreenObjectFinder(Node):
     
     def subscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
 
-        def lidar_diagram(self, lidar_arr):
-            """_summary_: This function ouputs a diagram of the most recent msg.ranges scan.
+        def lidar_diagram(self, lidar_arr, obj_lst):
+            """_summary_: This function ouputs a diagram of the most recent msg.ranges scan and places objects at their location.
 
             Args:
                 lidar_arr (array): This function takes in msg.ranges or any variable holding the array of msg.ranges as an argument.
@@ -74,13 +74,24 @@ class GreenObjectFinder(Node):
                 The output is a circular diagram of the lidar scan saved as a png.
             """
             lidar_angles = np.array([1 for x in range(0,len(lidar_arr)+1,5)])
-            my_labels = [x for x in range(0,len(lidar_arr)+1,5)]
+            my_labels = []
+            for x in range(0, len(lidar_arr)+1,5):
+                if obj_lst:
+                    if (obj_lst[0].location == x) or (obj_lst[0].location > x and obj_lst[0].location < x+5):
+                        my_labels.append(f'Object {obj_lst[0].id}')
+                        obj_lst.pop(0)
+                    else:
+                        my_labels.append(x)
+                else:
+                    my_labels.append(x)
+
             plt.pie(lidar_angles, labels=my_labels,startangle=90, radius=1.4)
             plt.savefig(path_to_lidar_diagram)
        
+       
         
         def avg_distance(value_1, value_2):
-            """_summary_
+            """_summary_: This function determines the average distance of the values within an objects slice.
 
             Args:
                 value_1 (int): The beginning index of the slice that references an object of interest.
@@ -133,7 +144,6 @@ class GreenObjectFinder(Node):
             
         self.len_of_ranges = len(msg.ranges)
         lidar_vals = msg.ranges[0:len(msg.ranges)]
-        lidar_diagram(self, lidar_arr=lidar_vals)
         object = []
 
 
@@ -213,6 +223,8 @@ class GreenObjectFinder(Node):
                 writing_objects_list.append(new_obj)
                 print(new_obj.object_to_tuple())
                 counter+=1
+            
+            lidar_diagram(self, lidar_arr=lidar_vals, obj_lst=writing_objects_list)
            
             with open(path_to_csv, 'w') as f:
                 writer = csv.writer(f)
