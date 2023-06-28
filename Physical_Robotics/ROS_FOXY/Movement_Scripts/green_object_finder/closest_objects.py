@@ -2,21 +2,17 @@ import rclpy # Python library for ROS 2
 from rclpy.node import Node # Handles the creation of nodes
 from sensor_msgs.msg import LaserScan # LaserScan is another subscriber
 from geometry_msgs.msg import Twist # Twist data to move robot
-import cv2 # OpenCV library
 import numpy as np
 import matplotlib.pyplot as plt #Making diagram of lidar 
-from cv_bridge import CvBridge
-from std_msgs.msg import String #string for whether green found
-from sensor_msgs.msg import Image #image to publish image with green
-import time
 import sys
 from object_class import Object
 import csv 
 
 
+
 qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, history=rclpy.qos.HistoryPolicy.KEEP_LAST, depth=1)
 path_to_csv = '/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/nearby_objects.csv'
-
+path_to_lidar_diagram = '/media/external/lidar_diagram.png'
     
 class GreenObjectFinder(Node):
     def __init__(self):
@@ -31,12 +27,6 @@ class GreenObjectFinder(Node):
         self.max = 1.5
         self.len_of_ranges = 250
 
-    def lidar_diagram(self, lidar_arr):
-        lidar_angles = np.array([1 for x in range(0,len(lidar_arr),5)])
-        my_labels = [x for x in range(0,len(lidar_arr),5)]
-
-        plt.pie(lidar_angles, labels=my_labels,startangle=90, radius=1.4)
-        plt.savefig('/home/gardongo/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/lidar_diagram.png')
 
     def get_unique_objects(self):
         """_summary_:This function parses through the self.closest_objects list of tuples and sorts them into
@@ -73,16 +63,21 @@ class GreenObjectFinder(Node):
         return unique_objects
     
     def subscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
+
         def lidar_diagram(self, lidar_arr):
+            """_summary_: This function ouputs a diagram of the most recent msg.ranges scan.
+
+            Args:
+                lidar_arr (array): This function takes in msg.ranges or any variable holding the array of msg.ranges as an argument.
+
+            Output:
+                The output is a circular diagram of the lidar scan saved as a png.
+            """
             lidar_angles = np.array([1 for x in range(0,len(lidar_arr)+1,5)])
             my_labels = [x for x in range(0,len(lidar_arr)+1,5)]
             plt.pie(lidar_angles, labels=my_labels,startangle=90, radius=1.4)
-            plt.savefig('/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/lidar_diagram.png')
+            plt.savefig(path_to_lidar_diagram)
        
-        self.len_of_ranges = len(msg.ranges)
-        lidar_vals = msg.ranges[0:len(msg.ranges)]
-        lidar_diagram(self, lidar_arr=lidar_vals)
-        object = []
         
         def avg_distance(value_1, value_2):
             """_summary_
@@ -118,7 +113,7 @@ class GreenObjectFinder(Node):
             if np.isnan(lidar_vals[idx]):
                 return detect_next_nan(idx+1)
             else:
-                return lidar_vals[idx] > self.max, idx
+                return lidar_vals[idx] > self.max, idx-1
             
         def detect_last_nan(idx):
             """_summary_: This function is a recursive call to find the last valid index that is not NaN.
@@ -134,7 +129,12 @@ class GreenObjectFinder(Node):
             if np.isnan(lidar_vals[idx]):
                 return detect_last_nan(idx-1)
             else:
-                return lidar_vals[idx] > self.max, idx
+                return lidar_vals[idx] > self.max, idx+1
+            
+        self.len_of_ranges = len(msg.ranges)
+        lidar_vals = msg.ranges[0:len(msg.ranges)]
+        lidar_diagram(self, lidar_arr=lidar_vals)
+        object = []
 
 
         for idx in range(len(lidar_vals)):
