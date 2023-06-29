@@ -5,7 +5,7 @@ from geometry_msgs.msg import Twist # Twist data to move robot
 import numpy as np
 import matplotlib.pyplot as plt #Making diagram of lidar 
 import sys
-from object_class import Object
+from .submodules.object_class import Object
 import csv 
 
 
@@ -211,7 +211,7 @@ class GreenObjectFinder(Node):
             """
             counter = 1
             writing_objects_list = []
-            if abs(avg_distance(final_list[0][0],final_list[0][1])- avg_distance(final_list[-1][0],final_list[-1][1])) <= 0.04:
+            if abs(avg_distance(final_list[0][0],final_list[0][1])- avg_distance(final_list[-1][0],final_list[-1][1]))< 0.03:
                 if final_list[0][0] <= 5 and final_list[-1][1] >= self.len_of_ranges - 5:
                     final_list.pop(-1)
                     final_list[0] = [0,1]
@@ -224,7 +224,7 @@ class GreenObjectFinder(Node):
                 print(new_obj.object_to_tuple())
                 counter+=1
             
-            lidar_diagram(self, lidar_arr=lidar_vals, obj_lst=writing_objects_list[:])
+            lidar_diagram(self, lidar_arr=lidar_vals, obj_lst=writing_objects_list)
            
             with open(path_to_csv, 'w') as f:
                 writer = csv.writer(f)

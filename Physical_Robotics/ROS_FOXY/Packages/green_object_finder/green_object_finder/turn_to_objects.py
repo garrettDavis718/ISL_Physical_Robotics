@@ -10,7 +10,7 @@ from cv_bridge import CvBridge
 import numpy as np
 import sys
 from sensor_msgs.msg import Image #image to publish image with green
-from object_class import Object
+from .submodules.object_class import Object
 from std_msgs.msg import String #string for whether green found
 
 
