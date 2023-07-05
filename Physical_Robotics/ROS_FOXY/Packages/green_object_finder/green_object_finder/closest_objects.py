@@ -5,13 +5,13 @@ from geometry_msgs.msg import Twist # Twist data to move robot
 import numpy as np
 import matplotlib.pyplot as plt #Making diagram of lidar 
 import sys
-from .submodules.object_class import Object
+from object_class import Object
 import csv 
 
 
 
 qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, history=rclpy.qos.HistoryPolicy.KEEP_LAST, depth=1)
-path_to_csv = '/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/nearby_objects.csv'
+path_to_csv = '/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/green_object_finder/nearby_objects.csv'
 path_to_lidar_diagram = '/media/external/lidar_diagram.png'
     
 class GreenObjectFinder(Node):
@@ -25,11 +25,12 @@ class GreenObjectFinder(Node):
         self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.counter = 1
         self.max = 1.5
-        self.len_of_ranges = 250
+        self.lidar_vals = None
+        self.len_of_lidar = 250
 
 
     def get_unique_objects(self):
-        """_summary_:This function parses through the self.closest_objects list of tuples and sorts them into
+        """This function parses through the self.closest_objects list of tuples and sorts them into
         a list of lists. The elements of the unique_objects list are a list of tuples grouped by the likelihood that the slice
         belongs to the same object.
 
@@ -64,18 +65,18 @@ class GreenObjectFinder(Node):
     
     def subscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
 
-        def lidar_diagram(self, lidar_arr, obj_lst):
-            """_summary_: This function ouputs a diagram of the most recent msg.ranges scan and places objects at their location.
+        def lidar_diagram(self, lidar_list, obj_lst):
+            """This function ouputs a diagram of the most recent msg.ranges scan and places objects at their location.
 
             Args:
-                lidar_arr (array): This function takes in msg.ranges or any variable holding the array of msg.ranges as an argument.
+                lidar_list (array): This function takes in msg.ranges or any variable holding the array of msg.ranges as an argument.
 
             Output:
                 The output is a circular diagram of the lidar scan saved as a png.
             """
-            lidar_angles = np.array([1 for x in range(0,len(lidar_arr)+1,5)])
+            lidar_angles = np.array([1 for x in range(0,len(lidar_list)+1,5)])
             my_labels = []
-            for x in range(0, len(lidar_arr)+1,5):
+            for x in range(0, len(lidar_list)+1,5):
                 if obj_lst:
                     if (obj_lst[0].location == x) or (obj_lst[0].location > x and obj_lst[0].location < x+5):
                         my_labels.append(f'Object {obj_lst[0].id}')
@@ -91,7 +92,7 @@ class GreenObjectFinder(Node):
        
         
         def avg_distance(value_1, value_2):
-            """_summary_: This function determines the average distance of the values within an objects slice.
+            """This function determines the average distance of the values within an objects slice.
 
             Args:
                 value_1 (int): The beginning index of the slice that references an object of interest.
@@ -102,92 +103,36 @@ class GreenObjectFinder(Node):
             """
             counter = 0
             total = 0
-            for x in msg.ranges[value_1: value_2]:
-                if not (np.isnan(x)):    
-                    total += x
-                    counter += 1
+            for x in self.lidar_vals[value_1: value_2]:    
+                total += x
+                counter += 1
             return total/counter
-            
         
-
-        def detect_next_nan(idx):
-            """_summary_: This function is a recursive call to find the next valid index that is not NaN.
-
-            Args:
-                idx (int): Pass in the index after our current index to check if that index contains a NaN.
-
-            Returns:
-                bool, int: Returns True or False if the next valid index is outside our declared range. The next
-                valid index is returned as well.
-            """            ''''''
-
-            if np.isnan(lidar_vals[idx]):
-                return detect_next_nan(idx+1)
-            else:
-                return lidar_vals[idx] > self.max, idx-1
-            
-        def detect_last_nan(idx):
-            """_summary_: This function is a recursive call to find the last valid index that is not NaN.
-
-            Args:
-                idx (int): Pass in the index before our current index to check if that index contains a NaN.
-
-            Returns:
-                bool, int: Returns True or False if the last valid index is outside our declared range. The last
-                valid index is returned as well.
-            """            
-
-            if np.isnan(lidar_vals[idx]):
-                return detect_last_nan(idx-1)
-            else:
-                return lidar_vals[idx] > self.max, idx+1
-            
-        self.len_of_ranges = len(msg.ranges)
-        lidar_vals = msg.ranges[0:len(msg.ranges)]
+        #Create a list of our lidar distances that does not contain NaNs
+        self.lidar_vals= [x for x in msg.ranges[0:len(msg.ranges)-1] if not np.isnan(x)]
+        self.len_of_lidar = len(self.lidar_vals)
         object = []
 
 
-        for idx in range(len(lidar_vals)):
+        for idx in range(len(self.lidar_vals)-1):
 
             next_idx = idx + 1
             previous_idx = idx - 1
 
-            if np.isnan(lidar_vals[idx]):
-                pass
-
-            elif lidar_vals[idx] > self.max and object:
-                object.append(idx)
-
-            elif lidar_vals[idx] < self.max:
+            if self.lidar_vals[idx] < self.max:
 
 
-                if idx == 0 or idx == (len(lidar_vals)-1):
+                if idx == 0 or idx == (len(self.lidar_vals)-1):
 
                     object.append(idx)
 
                 else:
-                    is_next_nan = np.isnan(lidar_vals[next_idx])
-                    is_previous_nan = np.isnan(lidar_vals[previous_idx])
 
-                    if (lidar_vals[previous_idx] > self.max or lidar_vals[next_idx] > self.max) or is_next_nan or is_previous_nan:
+                    if self.lidar_vals[next_idx] >= self.max:
+                            object.append(idx)
 
-                        if is_next_nan:
-                            next_idx_bool, next_valid_idx = detect_next_nan(next_idx)
-
-                            if next_idx_bool:
-                                object.append(next_valid_idx)       
-
-                        elif is_previous_nan:
-                            previous_idx_bool, previous_valid_idx = detect_last_nan(previous_idx)
-
-                            if previous_idx_bool:
-                                object.append(previous_valid_idx)
-
-                        elif lidar_vals[next_idx] > self.max:
-                                object.append(idx)
-
-                        elif lidar_vals[previous_idx] > self.max:
-                                object.append(idx)
+                    elif self.lidar_vals[previous_idx] >= self.max:
+                            object.append(idx)
 
 
                 if not (object in self.closest_objects) and (len(object) > 1 and len(object) < 3):
@@ -197,7 +142,7 @@ class GreenObjectFinder(Node):
                     
 
         def write_objects(final_list):
-            """_summary_: This function takes in a list of unique objects within the turtlebot's declared range
+            """This function takes in a list of unique objects within the turtlebot's declared range
             and instantiates each item of the list as an object of the object class. Each object is appended to 
             a list that will be iterated over in order to create a csv.
 
@@ -212,19 +157,19 @@ class GreenObjectFinder(Node):
             counter = 1
             writing_objects_list = []
             if abs(avg_distance(final_list[0][0],final_list[0][1])- avg_distance(final_list[-1][0],final_list[-1][1]))< 0.03:
-                if final_list[0][0] <= 5 and final_list[-1][1] >= self.len_of_ranges - 5:
+                if final_list[0][0] <= 5 and final_list[-1][1] >= self.len_of_lidar - 5:
                     final_list.pop(-1)
                     final_list[0] = [0,1]
                     
             
             for x in final_list:
                 center = int((x[0]+x[1])/2)
-                new_obj = Object(counter, center, avg_distance(x[0],x[1]), False)
+                new_obj = Object(counter, center, avg_distance(x[0],x[1]), False, self.len_of_lidar)
                 writing_objects_list.append(new_obj)
                 print(new_obj.object_to_tuple())
                 counter+=1
             
-            lidar_diagram(self, lidar_arr=lidar_vals, obj_lst=writing_objects_list)
+            lidar_diagram(self, lidar_list=self.lidar_vals, obj_lst=writing_objects_list[:])
            
             with open(path_to_csv, 'w') as f:
                 writer = csv.writer(f)
