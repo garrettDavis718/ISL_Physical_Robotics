@@ -6,7 +6,7 @@ class Object():
         self.location = location
         self.distance = round(distance, 5)
         self.is_green = is_green
-        self.lidar_angles = None
+        self.lidar_angles = lidar_angles
 
     def __str__(self):
         return f"id - {self.id}, loc - {self.location}, dist - {self.distance}, isGreen - {self.is_green}, angles - {self.lidar_angles}"
