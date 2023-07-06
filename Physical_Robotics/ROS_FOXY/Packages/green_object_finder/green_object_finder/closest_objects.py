@@ -5,7 +5,7 @@ from geometry_msgs.msg import Twist # Twist data to move robot
 import numpy as np
 import matplotlib.pyplot as plt #Making diagram of lidar 
 import sys
-from .submodule.object_class import Object
+from .submodules.object_class import Object
 import csv 
 
 
