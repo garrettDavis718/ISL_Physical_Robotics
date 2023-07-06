@@ -1,5 +1,7 @@
 ssh r2tb-01 -
-ssh ubuntu@192.168.0.200 
+ssh ubuntu@192.168.0.200
+ssh r2tb-02 - 
+ssh ubuntu@192.168.0.14 
 pass - turtlebot
 
 bringup tb
