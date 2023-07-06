@@ -10,7 +10,7 @@ from cv_bridge import CvBridge
 import numpy as np
 import sys
 from sensor_msgs.msg import Image #image to publish image with green
-from object_class import Object
+from .submodules.object_class import Object
 from std_msgs.msg import String #string for whether green found
 
 
@@ -143,7 +143,7 @@ def read_csv():
     return new_list
 
 def write_csv(objects):
-    """his function will write a new csv with updated values for the is_green attribute of our objects.
+    """This function will write a new csv with updated values for the is_green attribute of our objects.
 
     Args:
         objects (list): objects is a list of objects of the object class.
