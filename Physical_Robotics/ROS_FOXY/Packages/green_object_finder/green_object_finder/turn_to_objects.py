@@ -15,7 +15,7 @@ from std_msgs.msg import String #string for whether green found
 
 
 qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, history=rclpy.qos.HistoryPolicy.KEEP_LAST, depth=1)
-path_to_csv = '/home/ubuntu/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/nearby_objects.csv'
+path_to_csv = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
 lower_green = np.array([48,63,63])
 upper_green = np.array([98,255,255])
 time_stamp = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
