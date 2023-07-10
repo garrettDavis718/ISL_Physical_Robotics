@@ -129,6 +129,10 @@ class WallAvoider(Node):
         cap = cv2.VideoCapture(0)
         ret, frame = cap.read()
         if ret:
+            contours, _ = cv2.findContours (frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            for contour in contours:
+                x, y, w, h = cv2.boundingRect(contour)
+                cv2.rectangle(frame, (x,y), (x+w, y+h), (0,255,0), 2)
             cv2.imwrite(path_to_photo, frame)
             print("Photo Taken")
 
