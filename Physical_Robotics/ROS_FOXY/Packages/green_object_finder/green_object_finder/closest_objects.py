@@ -180,9 +180,16 @@ class GreenObjectFinder(Node):
 
 
         if self.counter == 1:
-            final_objects = [min(x) for x in self.get_unique_objects()]  
-            write_objects(final_objects) 
-            sys.exit()
+
+            final_objects = [min(x) for x in self.get_unique_objects() if x]
+            if final_objects:
+                write_objects(final_objects) 
+                sys.exit()
+            else:
+                none_object = Object(0,0,0.0,False, self.len_of_lidar)
+                write_objects([none_object])
+                print('no objects')
+                sys.exit()
 
           
         else:

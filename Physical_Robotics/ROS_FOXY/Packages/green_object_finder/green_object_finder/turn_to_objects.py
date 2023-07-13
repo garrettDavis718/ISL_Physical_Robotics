@@ -53,18 +53,20 @@ class WallAvoider(Node):
             self.found_objects.append(obj)
         print('all objects checked')
         
-        try:
+        if self.closest_object.is_green:
+
             self.turn_right()
             time.sleep((self.current_degree - self.closest_object.location)/self.closest_object.lidar_angles*32.5)
-        except ZeroDivisionError:
-            print('No Green Objects.')
+            print("Nearest Object in front")
+            self.pub.publish(Twist())
+            self.take_photo()
+            write_csv(self.found_objects)
             sys.exit()
             
-        print("Nearest Object in front")
-        self.pub.publish(Twist())
-        self.take_photo()
-        write_csv(self.found_objects)
-        sys.exit()
+        else:
+            
+            print('No green objects.')
+            sys.exit()
 
 
 
