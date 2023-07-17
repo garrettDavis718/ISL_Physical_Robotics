@@ -137,9 +137,7 @@ def lidar_diagram(lidar_list, obj_lst):
     print(my_labels)
     plt.pie(lidar_angles, labels=my_labels,startangle=90, radius=1.4)
     plt.savefig(path_to_lidar_diagram)
-       
-       
-        
+            
 def avg_distance(value_1, value_2, lidar_scan_no_nan):
     """This function determines the average distance of the values within an objects slice.
 
