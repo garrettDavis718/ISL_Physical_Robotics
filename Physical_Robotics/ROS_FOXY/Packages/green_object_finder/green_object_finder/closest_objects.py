@@ -134,7 +134,6 @@ def lidar_diagram(lidar_list, obj_lst):
                 my_labels.append(x)
         else:
             my_labels.append(x)
-    print(my_labels)
     plt.pie(lidar_angles, labels=my_labels,startangle=90, radius=1.4)
     plt.savefig(path_to_lidar_diagram)
             
