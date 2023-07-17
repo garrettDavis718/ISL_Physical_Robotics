@@ -11,6 +11,7 @@ import numpy as np
 import sys
 from sensor_msgs.msg import Image #image to publish image with green
 from .submodules.object_class import Object
+from .submodules.movement import turn_right, turn_left
 from std_msgs.msg import String #string for whether green found
 
 
@@ -40,7 +41,7 @@ class WallAvoider(Node):
     def suscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
         for obj in self.object_list:
             turn_loc = obj.location - self.current_degree
-            self.turn_left()
+            turn_left()
             time.sleep(turn_loc/obj.lidar_angles*32.5)
             self.current_degree = obj.location
             self.pub.publish(Twist())
@@ -55,7 +56,7 @@ class WallAvoider(Node):
         
         if self.closest_object.is_green:
 
-            self.turn_right()
+            turn_right()
             time.sleep((self.current_degree - self.closest_object.location)/self.closest_object.lidar_angles*32.5)
             print("Nearest Object in front")
             self.pub.publish(Twist())
@@ -94,35 +95,6 @@ class WallAvoider(Node):
             self.get_logger().info('No green found')
         return green_found
 
-    def turn_right(self, move_cmd = Twist()):
-        move_cmd.linear.x = 0.0
-        move_cmd.angular.z = -0.2
-        #publish command
-        self.pub.publish(move_cmd)
-        print('Turning right')
-        
-    
-    def turn_left(self, move_cmd = Twist()):
-        move_cmd.linear.x = 0.0
-        move_cmd.angular.z = 0.2
-        #publish command
-        self.pub.publish(move_cmd)
-        print('Turning left')
-        
-    
-    def move_forward(self, move_cmd = Twist()):
-        move_cmd.linear.x = 0.2
-        move_cmd.angular.z = 0.0
-        #publish command
-        self.pub.publish(move_cmd)
-        print('Moving forward')
-
-    def move_backward(self, move_cmd = Twist()):
-        move_cmd.linear.x = -0.2
-        move_cmd.angular.z = 0.0
-        #publish command
-        self.pub.publish(move_cmd)
-        print('Moving backward')
 
     def take_photo(self):
         """This function is called once the turtlebot has found the closest green object. It will take
