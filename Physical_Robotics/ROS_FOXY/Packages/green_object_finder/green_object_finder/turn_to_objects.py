@@ -11,7 +11,7 @@ import numpy as np
 import sys #Used to kill the program
 from sensor_msgs.msg import Image #image to publish image with green
 from .submodules.object_class import Object #Object class that hold the data for each object in the tb's range
-from .submodules.movement import turn_right, turn_left #Movement to turn to each object
+from .submodules.movement import MovementCommands as mc  #Movement to turn to each object
 from std_msgs.msg import String #string for whether green found
 
 
@@ -50,7 +50,7 @@ class WallAvoider(Node):
         for obj in self.object_list:  #Iterate ove the list of objects, turn to each one and determine if they are green.
 
             turn_loc = obj.location - self.current_degree  #Calculate the position of the object we currently want to check
-            turn_left()
+            mc.turn_left()
             time.sleep(turn_loc/obj.lidar_angles*32.5)
             self.pub.publish(Twist())  #Halt turning
 
@@ -71,7 +71,7 @@ class WallAvoider(Node):
         
         if self.closest_object.is_green: #Turns back to the closest green object
 
-            turn_right() 
+            mc.turn_right() 
             time.sleep((self.current_degree - self.closest_object.location)/self.closest_object.lidar_angles*32.5)
             
             print("Nearest Object in front")
@@ -97,7 +97,7 @@ class WallAvoider(Node):
         green_found = False  #Placeholder variable to update the status of green
         cap = cv2.VideoCapture(0)
 
-        #Truncated vision to avoud detecting green objects in background
+        #Truncated vision to avoid detecting green objects in background
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
