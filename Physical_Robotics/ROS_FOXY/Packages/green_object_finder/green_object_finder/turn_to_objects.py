@@ -1,70 +1,86 @@
-import csv 
+import csv #For reading and writing data to csv
 import rclpy
-from datetime import datetime
+from datetime import datetime #Used to create a timestamp
 from rclpy.node import Node # Handles the creation of nodes
 from sensor_msgs.msg import LaserScan # LaserScan is another subscriber
-import time
-from geometry_msgs.msg import Twist
+import time #Used to make precise turns 
+from geometry_msgs.msg import Twist #/cmd_vel publisher
 import cv2 # OpenCV library
 from cv_bridge import CvBridge
 import numpy as np
-import sys
+import sys #Used to kill the program
 from sensor_msgs.msg import Image #image to publish image with green
-from .submodules.object_class import Object
-from .submodules.movement import turn_right, turn_left
+from .submodules.object_class import Object #Object class that hold the data for each object in the tb's range
+from .submodules.movement import turn_right, turn_left #Movement to turn to each object
 from std_msgs.msg import String #string for whether green found
 
 
 qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, history=rclpy.qos.HistoryPolicy.KEEP_LAST, depth=1)
+
+#Path to read the csv output by closest_objects.py
 path_to_csv = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
+
+#The lower and upper bound values for the color green
 lower_green = np.array([48,63,63])
 upper_green = np.array([98,255,255])
-time_stamp = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
+
+time_stamp = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")  #Time stamp to accurately keep track of the csv's output by this script
+
+#The path to the usb that this script will write the updated csv and save our photo of the green object
 output_csv_path = f'/media/external/nearby_csv{time_stamp}.csv'
 path_to_photo = f'/media/external/nearest_image{time_stamp}.png'
+
 class WallAvoider(Node):
     def __init__(self):
-        self.object_list = read_csv()
-        self.current_degree = 0
-        self.found_objects = []
-    #Super init
-        super().__init__("wall_avoider_node")
-        #init sub attribute for Lidar Scan
+        self.object_list = read_csv()  #Read from the csv outputted by closest_objects.py to create a list of objects
+        self.current_degree = 0  #The current degree that the tb is facing
+        self.found_objects = []  #List of objects after being checked for green
+
+        super().__init__("wall_avoider_node")  #Super init
+
         self.sub = self.create_subscription(LaserScan, "/scan",
-         self.suscriber_callback, qos_policy)
-        #init velocity pub
-        self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
+         self.suscriber_callback, qos_policy)  #init sub attribute for Lidar Scan
+        self.pub = self.create_publisher(Twist, '/cmd_vel', 10)  #init velocity pub
         self.br = CvBridge()
-        self.green_found = False
-        self.closest_object = Object(0,0,0.0,False,0)
+        self.green_found = False  #Attribute to hold whether or not a object is green
+        self.closest_object = Object(0,0,0.0,False,0) #Placeholder attribute to save the closest green object
     
     def suscriber_callback(self, msg: LaserScan, move_cmd = Twist()):
-        for obj in self.object_list:
-            turn_loc = obj.location - self.current_degree
+
+        for obj in self.object_list:  #Iterate ove the list of objects, turn to each one and determine if they are green.
+
+            turn_loc = obj.location - self.current_degree  #Calculate the position of the object we currently want to check
             turn_left()
             time.sleep(turn_loc/obj.lidar_angles*32.5)
-            self.current_degree = obj.location
-            self.pub.publish(Twist())
-            obj.is_green = self.green_finder()
+            self.pub.publish(Twist())  #Halt turning
+
+            self.current_degree = obj.location  #Update the degree at which the tb is currently facing
+            obj.is_green = self.green_finder()  #Call green_finder function to determine if the object is green
+
             if obj.is_green:
-                if self.closest_object.distance == 0.0 :
+
+                if self.closest_object.distance == 0.0 :  #If self.closest_object hasn't been updated, do so.
                     self.closest_object = obj
-                elif obj.distance <= self.closest_object.distance:
+
+                elif obj.distance <= self.closest_object.distance:  #If current green object is closer, update self.closest_object
                     self.closest_object = obj
-            self.found_objects.append(obj)
+
+            self.found_objects.append(obj) #Append to the final list of objects
+
         print('all objects checked')
         
-        if self.closest_object.is_green:
+        if self.closest_object.is_green: #Turns back to the closest green object
 
-            turn_right()
+            turn_right() 
             time.sleep((self.current_degree - self.closest_object.location)/self.closest_object.lidar_angles*32.5)
+            
             print("Nearest Object in front")
             self.pub.publish(Twist())
-            self.take_photo()
-            write_csv(self.found_objects)
+            self.take_photo()  #Take photo of the closest green object
+            write_csv(self.found_objects)  #writing the updated objects to a csv
             sys.exit()
             
-        else:
+        else:  #No green objects were found
             
             print('No green objects.')
             sys.exit()
@@ -78,21 +94,24 @@ class WallAvoider(Node):
         Returns:
             bool: Returns a True or False value depending on whether or not green was detected.
         """
-        green_found = False
+        green_found = False  #Placeholder variable to update the status of green
         cap = cv2.VideoCapture(0)
+
+        #Truncated vision to avoud detecting green objects in background
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+
         ret, frame = cap.read()
-        #convert frame to hsv
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        #create masks
-        green_mask = cv2.inRange(hsv, lower_green, upper_green)
-        #check if green exists
-        if cv2.countNonZero(green_mask) > 0:
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  #convert frame to hsv
+        green_mask = cv2.inRange(hsv, lower_green, upper_green)  #create masks
+
+        if cv2.countNonZero(green_mask) > 0:  #check if green exists
             self.get_logger().info("Green Found!")
             green_found = True
-        else:
+
+        else:  #report if no green was found
             self.get_logger().info('No green found')
+
         return green_found
 
 
@@ -102,6 +121,7 @@ class WallAvoider(Node):
         """
         cap = cv2.VideoCapture(0)
         ret, frame = cap.read()
+
         if ret:
             cv2.imwrite(path_to_photo, frame)
             print("Photo Taken")
@@ -117,9 +137,11 @@ def read_csv():
     new_list = []
     with open(path_to_csv, 'r') as f:
         reader = csv.reader(f)
+
         for lines in reader:
             new_obj = Object(lines[0],int(lines[1]),float(lines[2]),lines[3], int(lines[4]))
             new_list.append(new_obj)
+
     return new_list
 
 def write_csv(objects):
@@ -134,6 +156,7 @@ def write_csv(objects):
     """
     with open(output_csv_path, 'w') as f:
         writer = csv.writer(f)
+
         for obj in objects:
             writer.writerow(obj.object_to_tuple())
 
