@@ -27,7 +27,7 @@ upper_green = np.array([98,255,255])
 time_stamp = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")  #Time stamp to accurately keep track of the csv's output by this script
 
 #The path to the usb that this script will write the updated csv and save our photo of the green object
-output_csv_path = f'/media/external/nearby_csv{time_stamp}.csv'
+output_csv_path = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
 path_to_photo = f'/media/external/nearest_image{time_stamp}.png'
 
 class WallAvoider(Node):
