@@ -50,7 +50,7 @@ class WallAvoider(Node):
         for obj in self.object_list:  #Iterate ove the list of objects, turn to each one and determine if they are green.
 
             turn_loc = obj.location - self.current_degree  #Calculate the position of the object we currently want to check
-            mc.turn_left()
+            mc.turn_left(self)
             time.sleep(turn_loc/obj.lidar_angles*32.5)
             self.pub.publish(Twist())  #Halt turning
 
@@ -71,7 +71,7 @@ class WallAvoider(Node):
         
         if self.closest_object.is_green: #Turns back to the closest green object
 
-            mc.turn_right() 
+            mc.turn_right(self) 
             time.sleep((self.current_degree - self.closest_object.location)/self.closest_object.lidar_angles*32.5)
             
             print("Nearest Object in front")
