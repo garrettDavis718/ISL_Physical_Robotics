@@ -4,7 +4,7 @@ from std_msgs.msg import Float32
 import csv
 from object_class import Object
 
-path_to_csv = '/home/gardongo/ISL_Physical_Robotics/Physical_Robotics/ROS_FOXY/Movement_Scripts/green_object_finder/nearby_objects.csv'
+path_to_csv = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
 turtlebot_name = 'R2TB_O1'
 
 class DistancePub(Node):
