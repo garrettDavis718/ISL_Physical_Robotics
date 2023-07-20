@@ -77,7 +77,7 @@ class WallAvoider(Node):
             print("Nearest Object in front")
             self.pub.publish(Twist())
             self.take_photo()  #Take photo of the closest green object
-            write_csv(self.found_objects)  #writing the updated objects to a csv
+            write_csv(self.closest_object)  #writing the updated objects to a csv
             sys.exit()
             
         else:  #No green objects were found
@@ -144,7 +144,7 @@ def read_csv():
 
     return new_list
 
-def write_csv(objects):
+def write_csv(object):
     """This function will write a new csv with updated values for the is_green attribute of our objects.
 
     Args:
@@ -156,9 +156,7 @@ def write_csv(objects):
     """
     with open(output_csv_path, 'w') as f:
         writer = csv.writer(f)
-
-        for obj in objects:
-            writer.writerow(obj.object_to_tuple())
+        writer.writerow(object.object_to_tuple())
 
 def main():
     rclpy.init(args=None)
