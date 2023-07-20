@@ -21,7 +21,9 @@ setup(
     entry_points={
         'console_scripts': [
             'closest_objects = green_object_finder.closest_objects:main',
-            'turn_to_objects = green_object_finder.turn_to_objects:main' 
+            'turn_to_objects = green_object_finder.turn_to_objects:main',
+            'distance_pub = green_object_finder.distance_pub:main',
+            'distance_sub = green_object_finder.distance_sub:main'
         ],
     },
 )
