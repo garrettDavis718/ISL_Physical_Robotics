@@ -97,11 +97,9 @@ class WallAvoider(Node):
         green_found = False  #Placeholder variable to update the status of green
         cap = cv2.VideoCapture(0)
 
-        #Truncated vision to avoid detecting green objects in background
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-
         ret, frame = cap.read()
+        frame = frame[240:-1, 213:427]
+
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  #convert frame to hsv
         green_mask = cv2.inRange(hsv, lower_green, upper_green)  #create masks
 
@@ -115,6 +113,7 @@ class WallAvoider(Node):
         return green_found
 
 
+
     def take_photo(self):
         """This function is called once the turtlebot has found the closest green object. It will take
         a photo and save it as a png named 'nearest_image' followed by a time stamp.
@@ -123,6 +122,7 @@ class WallAvoider(Node):
         ret, frame = cap.read()
 
         if ret:
+            frame = frame[240:-1, 213:427]
             cv2.imwrite(path_to_photo, frame)
             print("Photo Taken")
 
