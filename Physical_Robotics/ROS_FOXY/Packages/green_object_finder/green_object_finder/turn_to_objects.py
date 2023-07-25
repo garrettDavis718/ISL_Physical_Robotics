@@ -98,7 +98,7 @@ class WallAvoider(Node):
         cap = cv2.VideoCapture(0)
 
         ret, frame = cap.read()
-        frame = frame[240:-1, 213:427]
+        frame = frame[185:-1, 213:427]
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  #convert frame to hsv
         green_mask = cv2.inRange(hsv, lower_green, upper_green)  #create masks
@@ -122,7 +122,7 @@ class WallAvoider(Node):
         ret, frame = cap.read()
 
         if ret:
-            frame = frame[240:-1, 213:427]
+            frame = frame[185:-1, 213:427]
             cv2.imwrite(path_to_photo, frame)
             print("Photo Taken")
 
