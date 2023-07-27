@@ -120,7 +120,6 @@ class WallAvoider(Node):
         """
         cap = cv2.VideoCapture(0)
         ret, frame = cap.read()
-        frame = frame[0:-1, 213:427]        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  #convert frame to hsv
         green_mask = cv2.inRange(hsv, lower_green, upper_green)  #create masks
 
