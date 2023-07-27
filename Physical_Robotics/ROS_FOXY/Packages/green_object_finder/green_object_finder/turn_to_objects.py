@@ -98,7 +98,8 @@ class WallAvoider(Node):
         cap = cv2.VideoCapture(0)
 
         ret, frame = cap.read()
-        frame = frame[185:-1, 213:427]
+        frame = frame[0:-1, 213:427]
+
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  #convert frame to hsv
         green_mask = cv2.inRange(hsv, lower_green, upper_green)  #create masks
@@ -120,8 +121,16 @@ class WallAvoider(Node):
         """
         cap = cv2.VideoCapture(0)
         ret, frame = cap.read()
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  #convert frame to hsv
+        green_mask = cv2.inRange(hsv, lower_green, upper_green)  #create masks
 
         if ret:
+            contours, _ = cv2.findContours (green_mask , cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            for contour in contours:
+                x, y, w, h = cv2.boundingRect(contour)
+                cv2.rectangle(frame, (x,y), (x+w, y+h), (0,255,0), 2)
+          
             frame = frame[185:-1, 213:427]
             cv2.imwrite(path_to_photo, frame)
             print("Photo Taken")
