@@ -131,7 +131,7 @@ class WallAvoider(Node):
                 x, y, w, h = cv2.boundingRect(contour)
                 cv2.rectangle(frame, (x,y), (x+w, y+h), (0,255,0), 2)
           
-            frame = frame[185:-1, 213:427]
+            frame = frame[0:-1, 213:427]
             cv2.imwrite(path_to_photo, frame)
             print("Photo Taken")
 
