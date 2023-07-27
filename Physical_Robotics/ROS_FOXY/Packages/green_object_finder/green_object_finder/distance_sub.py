@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 import csv #For reading and writing data to csv
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 import sys
 import cv2 # OpenCV library
 from cv_bridge import CvBridge
@@ -22,9 +22,9 @@ class DistanceSub(Node):
         self.tb2_distance = None
         self.counter = 1
         super().__init__('distance_sub')
-        self.sub = self.create_subscription(Float32, turtlebot_name_2, self.subscriber_callback, 10)
+        self.sub = self.create_subscription(Float64, turtlebot_name_2, self.subscriber_callback, 10)
 
-    def subscriber_callback(self, msg: Float32):
+    def subscriber_callback(self, msg: Float64):
         self.tb2_distance = msg.data
         
         if self.tb1_distance < self.tb2_distance:

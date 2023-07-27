@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node # Handles the creation of nodes
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 import csv
 #from object_class import Object
 
@@ -12,7 +12,7 @@ turtlebot_name_2 = 'R2TB_O2'
 class DistancePub(Node):
     def __init__(self):
         super().__init__('distance_pub')
-        self.pub = self.create_publisher(Float32, turtlebot_name_2, 10)
+        self.pub = self.create_publisher(Float64, turtlebot_name_2, 10)
         self.close_objects = read_csv()
         # We will publish a message every 0.1 seconds
         timer_period = 0.1  # seconds
@@ -20,7 +20,7 @@ class DistancePub(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self):
-        min_distance = Float32()
+        min_distance = Float64()
         min_distance.data = float(min(self.close_objects))
         self.get_logger().info(str(min_distance.data))
         self.pub.publish(min_distance)
