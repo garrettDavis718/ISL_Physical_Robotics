@@ -7,7 +7,7 @@ import csv
 path_to_csv = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
 turtlebot_name_1 = 'R2TB_01'
 turtlebot_name_2 = 'R2TB_02'
-turtlebot_name_2 = 'R2TB_03'
+turtlebot_name_3 = 'R2TB_03'
 
 
 class DistancePub(Node):
