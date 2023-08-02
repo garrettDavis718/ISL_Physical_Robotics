@@ -8,8 +8,9 @@ from cv_bridge import CvBridge
 from datetime import datetime
 from .submodules.object_class import Object
 
-turtlebot_name_1 = 'R2TB_O1'
-turtlebot_name_2 = 'R2TB_O2'
+turtlebot_name_1 = 'R2TB_01'
+turtlebot_name_2 = 'R2TB_02'
+turtlebot_name_3 = 'R2TB_03'
 time_stamp = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
 path_to_photo = f'/media/external/nearest_image{time_stamp}.png'
 path_to_csv = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
@@ -20,31 +21,47 @@ class DistanceSub(Node):
         self.current_distance = 1.5
         self.tb1_distance = read_csv()
         self.tb2_distance = None
+        self.tb3_distance = None
+        #tb_data
+        self.tb_data = {turtlebot_name_1 : self.tb1_distance, turtlebot_name_2 : [], 
+                        turtlebot_name_3 : []}
+        self.closest_tb = None
         self.counter = 1
+        timer_period = .5
         super().__init__('distance_sub')
-        self.sub = self.create_subscription(Float64, turtlebot_name_2, self.subscriber_callback, 10)
+        self.tb2_sub = self.create_subscription(Float64, turtlebot_name_2, self.tb2_sub_callback, 10)
+        self.tb3_sub = self.create_subscription(Float64, turtlebot_name_3, self.tb3_sub_callback, 10)
+        #timer callback for decision
+        self.timer = self.create_timer(timer_period, self.timer_callback)
 
-    def subscriber_callback(self, msg: Float64):
-        self.tb2_distance = msg.data
-        
-        if self.tb1_distance < self.tb2_distance:
-            print(f'turtlebot {turtlebot_name_1} is closer') 
-        
-        elif self.tb2_distance < self.tb1_distance:
-            print(f'turtlebot {turtlebot_name_2} is closer') 
-
-        elif self.tb1_distance == self.tb2_distance:
-            print('they are equal')
-
+    def tb2_sub_callback(self, msg: Float64):
+        if self.tb2_distance is None:
+            self.tb2_distance = msg.data
+            self.tb_data[turtlebot_name_2] = msg.data
+            print(f'tb_02 - {msg.data}')
         else:
-            print('there was an error')
+            self.tb2_sub.destroy()
+    
+    def tb3_sub_callback(self, msg: Float64):
+        if self.tb3_distance is None:
+            self.tb3_distance = msg.data
+            self.tb_data[turtlebot_name_3] = msg.data
+            print(f'tb_03 - {msg.data}')
+        else:
+            self.tb3_sub.destroy()
 
+        
+    def timer_callback(self):
+        if not(self.tb2_distance is None and self.tb3_distance is None):
+            closest_distance = 10
+            for i in self.tb_data.keys():
+                if self.tb_data[i] < closest_distance:
+                    closest_distance = self.tb_data[i]
+                    self.closest_tb = i
 
-
-        if self.counter == 1:
+            print(f'Closest turtlebot is {self.closest_tb}')
+            self.take_photo()
             sys.exit()
-        else:
-            self.counter += 1
 
     def take_photo(self):
         """This function is called once the turtlebot has found the closest green object. It will take
