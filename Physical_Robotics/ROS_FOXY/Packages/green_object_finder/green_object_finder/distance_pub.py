@@ -5,8 +5,9 @@ import csv
 #from object_class import Object
 
 path_to_csv = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
-turtlebot_name_1 = 'R2TB_O1'
-turtlebot_name_2 = 'R2TB_O2'
+turtlebot_name_1 = 'R2TB_01'
+turtlebot_name_2 = 'R2TB_02'
+turtlebot_name_2 = 'R2TB_03'
 
 
 class DistancePub(Node):
@@ -15,7 +16,7 @@ class DistancePub(Node):
         self.pub = self.create_publisher(Float64, turtlebot_name_2, 10)
         self.close_objects = read_csv()
         # We will publish a message every 0.1 seconds
-        timer_period = 0.1  # seconds
+        timer_period = 0.5  # seconds
         # Create the timer
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
