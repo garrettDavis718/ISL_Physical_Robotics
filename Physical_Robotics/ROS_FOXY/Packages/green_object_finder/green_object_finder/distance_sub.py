@@ -60,7 +60,6 @@ class DistanceSub(Node):
                     self.closest_tb = i
 
             print(f'Closest turtlebot is {self.closest_tb}')
-            self.take_photo()
             sys.exit()
 
     def take_photo(self):
@@ -86,6 +85,7 @@ def read_csv():
 
         for lines in reader:
             obj_distance = float(lines[2])
+            print(f"tb_01 - {obj_distance}")
 
     return obj_distance
 
