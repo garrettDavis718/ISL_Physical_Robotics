@@ -52,7 +52,7 @@ class DistanceSub(Node):
 
         
     def timer_callback(self):
-        if not(self.tb2_distance is None and self.tb3_distance is None):
+        if not(self.tb2_distance is None or self.tb3_distance is None):
             closest_distance = 10
             for i in self.tb_data.keys():
                 if self.tb_data[i] < closest_distance:
