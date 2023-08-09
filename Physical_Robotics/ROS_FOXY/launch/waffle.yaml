@@ -1,38 +1,40 @@
-turtlebot3_node:
-  ros_parameters:
+r2tb_03:
+  turtlebot3_node:
+    ros__parameters:
 
-    open_cr:
-      id: 200
-      baud_rate: 1000000
-      protocol_version: 2.0
+      open_cr:
+        id: 200
+        baud_rate: 1000000
+        protocol_version: 2.0
 
-    wheels:
-      seperation: 0.287
-      radius: 0.033
+      wheels:
+        seperation: 0.287
+        radius: 0.033
 
-    motors:
-      profile_acceleration_constant: 214.577\
+      motors:
+        profile_acceleration_constant: 214.577
 
-      #[rev/min2]
-      #ref) http://emanuel.robotis.com/docs/en/dxl/x/xl430-w250/#profile-acceleration
-      profile_acceleration: 0.0
+        #[rev/min2]
+        #ref) http://emanuel.robotis.com/docs/en/dxl/x/xl430-w250/#profile-acceleration
+        profile_acceleration: 0.0
 
-    sensors:
-      bumper_1: false
-      bumper_2: false
+      sensors:
+        bumper_1: false
+        bumper_2: false
 
-      illumination: false
+        illumination: false
 
-      ir: false
+        ir: false
 
-      sonar: false
+        sonar: false
 
-diff_drive_controller:
-  ros_parameters:
+r2tb_03:
+  diff_drive_controller:
+    ros__parameters:
 
-    odometry:
-      publish_tf: true 
-      use_imu: true 
-      frame_id: "odom"
-      child_frame_id: "base_footprint"
+      odometry:
+        publish_tf: true 
+        use_imu: true 
+        frame_id: "odom"
+        child_frame_id: "base_footprint"
 
