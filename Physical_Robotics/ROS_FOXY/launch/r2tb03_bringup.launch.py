@@ -42,12 +42,12 @@ def generate_launch_description():
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                [ThisLaunchFileDir(), '/R2TB-03_state_publisher.launch.py']),
+                [ThisLaunchFileDir(), '/r2tb03_state_publisher.launch.py']),
             launch_arguments={'use_sim_time': use_sim_time}.items(),
         ),
 
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([ThisLaunchFileDir(), '/hlds_laser.launch.py']),  #<--- CHANGE THIS
+            PythonLaunchDescriptionSource([ThisLaunchFileDir(), '/ld08.launch.py']),  #<--- CHANGE THIS
             launch_arguments={'port': '/dev/ttyUSB0', 'frame_id': 'base_scan'}.items(),
         ),
 

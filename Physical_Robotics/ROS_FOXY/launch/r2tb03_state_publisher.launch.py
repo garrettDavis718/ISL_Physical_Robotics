@@ -6,30 +6,36 @@ from launch.actions import DeclareLaunchArgument
 from launch.actions import LogInfo
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-
+from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    port = LaunchConfiguration('port', default='/dev/ttyUSB0')
+    TURTLEBOT3_MODEL = os.environ['TURTLEBOT3_MODEL']
 
-    frame_id = LaunchConfiguration('frame_id', default='laser')
+    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    urdf_file_name= 'turtlebot3_' + TURTLEBOT3_MODEL + '.urdf'
+
+    print("urdf_file_name: {}".format(urdf_file_name))
+
+    urdf = os.path.join(
+        get_package_share_directory('turtlebot3_description'),
+        'urdf',
+        urdf_file_name)
+
+    with open(urdf, 'r') as infp:
+        robot_desc = infp.read()
+
+    rsp_params = {'robot_description': robot_desc}
 
     return LaunchDescription([
-
         DeclareLaunchArgument(
-            'port',
-            default_value=port,
-            description='Specifying usb port to connected lidar'),
-
-        DeclareLaunchArgument(
-            'frame_id',
-            default_value=frame_id,
-            description='Specifying frame_id of lidar. Default frame_id is \'laser\''),
-
+            'use_sim_time',
+            default_value='false',
+            description='Use simulation (Gazebo) clock if true'),
         Node(
-            package='hls_lfcd_lds_driver',
-            node_executable='hlds_laser_publisher',
-            node_name='hlds_laser_publisher',
-            node_namespace='r2tb_03',  # <------------------- ADD THIS!
-            parameters=[{'port': port, 'frame_id': frame_id}],
-            output='screen'),
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            namespace='r2tb_03',  # <------------------- ADD THIS!
+            output='screen',
+            parameters=[rsp_params, {'use_sim_time': use_sim_time}])
+
     ])
