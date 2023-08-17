@@ -13,6 +13,7 @@ from sensor_msgs.msg import Image #image to publish image with green
 from .submodules.object_class import Object #Object class that hold the data for each object in the tb's range
 from .submodules.movement import MovementCommands as mc  #Movement to turn to each object
 from std_msgs.msg import String #string for whether green found
+from .submodules.get_turtlebot_namespace import get_turtlebot_namespace
 
 
 qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, history=rclpy.qos.HistoryPolicy.KEEP_LAST, depth=1)
@@ -30,6 +31,8 @@ time_stamp = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")  #Time stamp to accura
 output_csv_path = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
 path_to_photo = f'/media/external/nearest_image{time_stamp}.png'
 
+TB_NAMESPACE = get_turtlebot_namespace('TURTLEBOT_NAMESPACE')
+
 class WallAvoider(Node):
     def __init__(self):
         self.object_list = read_csv()  #Read from the csv outputted by closest_objects.py to create a list of objects
@@ -38,9 +41,9 @@ class WallAvoider(Node):
 
         super().__init__("wall_avoider_node")  #Super init
 
-        self.sub = self.create_subscription(LaserScan, "/scan",
+        self.sub = self.create_subscription(LaserScan, f"{TB_NAMESPACE}/scan",
          self.suscriber_callback, qos_policy)  #init sub attribute for Lidar Scan
-        self.pub = self.create_publisher(Twist, '/cmd_vel', 10)  #init velocity pub
+        self.pub = self.create_publisher(Twist, f"{TB_NAMESPACE}/cmd_vel", 10)  #init velocity pub
         self.br = CvBridge()
         self.green_found = False  #Attribute to hold whether or not a object is green
         self.closest_object = Object(0,0,0.0,False,0) #Placeholder attribute to save the closest green object

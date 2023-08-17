@@ -5,18 +5,20 @@ import numpy as np
 import matplotlib.pyplot as plt #Making diagram of lidar 
 import sys
 from .submodules.object_class import Object
+from .submodules.get_turtlebot_namespace import get_turtlebot_namespace
 import csv 
 
 qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, history=rclpy.qos.HistoryPolicy.KEEP_LAST, depth=1)
 path_to_csv = '/home/ubuntu/ros2_ws/src/green_object_finder/green_object_finder/nearby_objects.csv'
 path_to_lidar_diagram = '/media/external/lidar_diagram.png'
-    
+tb_namespace = get_turtlebot_namespace('TURTLEBOT_NAMESPACE')
+
 class GreenObjectFinder(Node):
     def __init__(self):
         self.closest_objects = []
         super().__init__('green_finder_node')
         #init sub attribute for Lidar Scan
-        self.sub = self.create_subscription(LaserScan, "/scan",
+        self.sub = self.create_subscription(LaserScan, f"{tb_namespace}/scan",
         self.subscriber_callback, qos_policy)
         self.counter = 1
         self.max = 1.5
